@@ -13,7 +13,7 @@ def genNetwork(segments, gw):
 	for seg in segments:
 		ipv4 = str(ip.network+gw)
 		inst = tmpl.substitute(gw="0%i"%(gw),seg=seg,ipv4=ipv4)
-		fp = open("etc/network/interfaces.d/ffs-gw%s%i"%(seg,gw), "wb")
+		fp = open("etc/network/interfaces.d/ffs-seg%s"%(seg), "wb")
 		fp.write(inst)
 		fp.close()
 		ip = IPNetwork(str(ip.broadcast+1)+"/18")
@@ -59,7 +59,7 @@ def genDhcp(segments, gw):
 
 
 segments = ["01","02","03","04"]
-gw=2
+gw=1
 genNetwork(segments,gw)
 genRadvd(segments,gw)
 genDhcp(segments,gw)
