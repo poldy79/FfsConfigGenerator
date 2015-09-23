@@ -57,9 +57,45 @@ def genDhcp(segments, gw):
 		ip = ip.next()
 	fp.close()
 
+def genBindOptions(segments,gw):
+        fp = open("named.conf.options.tpl","rb")
+        tpl = Template(fp.read())
+        fp.close()
+	fp = open("etc/bind/named.conf.options","wb")
+	ip = IPNetwork("10.190.0.0/18")
+	ipv4ips = ""
+	ipv6ips = ""
+	for seg in segments:
+		ipv4gw = str(ip.network+gw)
+		ipv4ips += "%s; "%(ipv4gw)
+		ipv6ips += "fd21:b4dc:4b%s::a38:%s; "%(seg,gw)
+		ip = ip.next()
+	inst = tpl.substitute(ipv4addr=ipv4ips,ipv6addr=ipv6ips)
+	fp.write(inst)
+	fp.close()
+
+def genBindLocal(segments,gw):
+	fp = open("named.conf.local.tpl","rb")
+	tpl = Template(fp.read())
+	fp.close()
+	fp = open("etc/bind/named.conf.local","wb")
+	ip = IPNetwork("10.190.0.0/18")
+	ipv4net = ""
+	ipv6net = ""
+	for seg in segments:
+		ipv4net += "    %s;\n"%(str(ip))
+		ipv6net += "    fd21:b4dc:4b%s::/48;\n"%(seg)
+		ip = ip.next()
+	inst = tpl.substitute(ipv4net=ipv4net,ipv6net=ipv6net)
+	fp.write(inst)
+	fp.close()
+
+
 
 segments = ["01","02","03","04"]
 gw=1
 genNetwork(segments,gw)
 genRadvd(segments,gw)
 genDhcp(segments,gw)
+genBindOptions(segments,gw)
+genBindLocal(segments,gw)
