@@ -23,6 +23,7 @@ iface bat${seg} inet6 manual
     post-up         /usr/sbin/batctl -m $$IFACE it 10000 || true
     post-up         /usr/sbin/batctl -m $$IFACE vm server || true
     post-up         /usr/sbin/batctl -m $$IFACE gw server  96mbit/96mbit || true
+    post-up         /usr/sbin/service alfred-vpn${seg} || true
     pre-down        /sbin/brctl delif br${seg} $$IFACE || true
 
 allow-hotplug vpn${seg}
