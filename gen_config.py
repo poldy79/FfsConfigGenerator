@@ -2,14 +2,15 @@
 from string import Template
 from netaddr import *
 import argparse
-
+import os
 
 def genNetwork(segments, gw):
 	fp = open("ffs-gw.tpl","rb")
 	tmpl = Template(fp.read())
 	fp.close()
 	ip = IPNetwork("10.190.0.0/18")
-
+	md("etc/network")
+	md("etc/network/interfaces.d")
 	for seg in segments:
 		ipv4 = str(ip.network+gw)
 		inst = tmpl.substitute(gw="0%i"%(gw),seg=seg,ipv4=ipv4)
@@ -36,7 +37,7 @@ def genDhcp(segments, gw):
 	fp = open("dhcpd.conf.head")
 	head = fp.read()
 	fp.close()
-
+	md("etc/dhcp")
 
 	fp = open("etc/dhcp/dhcpd.conf","wb")
 	fp.write(head)
@@ -61,6 +62,7 @@ def genBindOptions(segments,gw):
         fp = open("named.conf.options.tpl","rb")
         tpl = Template(fp.read())
         fp.close()
+	md("etc/bind")
 	fp = open("etc/bind/named.conf.options","wb")
 	ip = IPNetwork("10.190.0.0/18")
 	ipv4ips = ""
@@ -90,12 +92,33 @@ def genBindLocal(segments,gw):
 	fp.write(inst)
 	fp.close()
 
+def genFastdConfig(segments,gw):
+        fp = open("fastd.conf.tpl","rb")
+        tpl = Template(fp.read())
+        fp.close()
+	if not os.path.exists("etc/fastd"):
+		os.mkdir("etc/fastd")
+	for seg in segments:
+		port = int(seg)+10040
+		inst = tpl.substitute(port=port,seg=seg)
+		if not os.path.exists("etc/fastd/vpn%s"%(seg)):
+			os.mkdir("etc/fastd/vpn%s"%(seg))
+		fp=open("etc/fastd/vpn%s/fastd.conf"%(seg),"wb")
+		fp.write(inst)
+		fp.close()
 
+	
+	
+def md(d):
+	if not os.path.exists(d):
+		os.mkdir(d)
 
 segments = ["01","02","03","04"]
 gw=1
+md("etc")
 genNetwork(segments,gw)
 genRadvd(segments,gw)
 genDhcp(segments,gw)
 genBindOptions(segments,gw)
 genBindLocal(segments,gw)
+genFastdConfig(segments,gw)
