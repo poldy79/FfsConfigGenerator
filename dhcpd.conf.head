@@ -6,14 +6,4 @@ max-lease-time 300;
 log-facility local7;
 #log-facility local6;
 
-subnet 172.21.0.0 netmask 255.255.192.0 {
-    authoritative;
-    pool
-    {
-     range 172.21.4.2 172.21.7.254;
-     allow all clients;
-    }
-    option routers 172.21.4.1;
-    option domain-name-servers 172.21.4.1;
-}
 

@@ -4,7 +4,7 @@ iface br${seg} inet static
     address ${ipv4}
     netmask 255.255.192.0
     pre-up          /sbin/brctl addbr $$IFACE
-    up              /sbin/ip address add fd21:b4dc:4b${seg}::a38:${gw}/64 dev $$IFACE
+    up              /sbin/ip address add ${ipv6}/64 dev $$IFACE
     post-down       /sbin/brctl delbr $$IFACE
     # be sure all incoming traffic is handled by the appropriate rt_table
     post-up         /sbin/ip rule add iif $$IFACE table s priority 5600
@@ -13,8 +13,8 @@ iface br${seg} inet static
     #post-up         /sbin/ip route add unreachable default table s ||true
     #post-down       /sbin/ip route del unreachable default table s ||true
     # ULA route for rt_table stuttgart
-    post-up         /sbin/ip -6 route add fd21:b4dc:4b${seg}::/64 proto static dev $$IFACE table s
-    post-down       /sbin/ip -6 route del fd21:b4dc:4b${seg}::/64 proto static dev $$IFACE table s
+    post-up         /sbin/ip -6 route add ${ipv6net} proto static dev $$IFACE table s
+    post-down       /sbin/ip -6 route del ${ipv6net} proto static dev $$IFACE table s
 
 allow-hotplug bat${seg}
 iface bat${seg} inet6 manual
