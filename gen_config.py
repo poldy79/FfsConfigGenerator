@@ -16,6 +16,7 @@ def genNetwork(segments, gw,config):
 			continue
 		ip = IPNetwork(config["segments"][seg]["ipv4network"])
 		ipv6net = IPNetwork(config["segments"][seg]["ipv6network"])
+		ipv6addr = IPAddress("::a38:%i"%(gw),6)
 		ipv6 = ipv6net.ip+IPAddress("::a38:%i"%(gw))
 		if seg == "00":
 			ipv4 = config["gws"]["%s"%(gw)]["legacyipv4"]
@@ -114,6 +115,9 @@ def genFastdConfig(segments,gw,config):
         fp = open("fastd.conf.tpl","rb")
         tpl = Template(fp.read())
         fp.close()
+	externalipv4 = config["gws"]["%s"%(gw)]["externalipv4"]
+        externalipv6 = config["gws"]["%s"%(gw)]["externalipv6"]
+
 	if not os.path.exists("etc/fastd"):
 		os.mkdir("etc/fastd")
 	for seg in segments:
@@ -121,7 +125,7 @@ def genFastdConfig(segments,gw,config):
 			port = 10037
 		else:
 			port = int(seg)+10040
-		inst = tpl.substitute(port=port,seg=seg)
+		inst = tpl.substitute(port=port,seg=seg,externalipv4=externalipv4,externalipv6=externalipv6)
 		if not os.path.exists("etc/fastd/vpn%s"%(seg)):
 			os.mkdir("etc/fastd/vpn%s"%(seg))
 		fp=open("etc/fastd/vpn%s/fastd.conf"%(seg),"wb")
@@ -135,7 +139,7 @@ def md(d):
 		os.mkdir(d)
 
 segments = ["00", "01","02","03","04"]
-gw=1
+gw=int(os.environ.get('GWNUM'))
 md("etc")
 fp = open("config.json","rb")
 config = json.load(fp)
